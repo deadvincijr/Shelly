@@ -317,7 +317,6 @@ if ($Choice -eq 1) {
 
         $Sleeptime = Get-Random -Minimum 10 -Maximum 41
         $Monstertype = Get-Random -Minimum 1 -Maximum 4
-
         for ($j = 1; $j++) {
             $Sleeptime = Get-Random -Minimum 10 -Maximum 41
             $Monstertype = Get-Random -Minimum 1 -Maximum 4
@@ -344,21 +343,6 @@ if ($Choice -eq 1) {
 
         Set-Location $path
 
-        # Load the necessary .NET assemblies
-        Add-Type -AssemblyName PresentationCore, PresentationFramework, WindowsBase
-        Add-Type -LiteralPath C:\Windows\Microsoft.NET\Framework64\v4.0.30319\System.Windows.Forms.dll;
-        [System.Windows.Forms.Form]
-
-        Add-Type @"
-        using System;
-        using System.Runtime.InteropServices;
-
-        public class KeyPress
-        {
-            [DllImport("user32.dll")]
-            public static extern short GetAsyncKeyState(int vKey);
-        }
-"@
 
         #A60 Program
         function A60 {
@@ -659,4 +643,8 @@ if ($Choice -eq 1) {
         Write-Host "Please type 1 or 2 to decide."
         Start-Sleep -seconds 5
     }
+} elseif ($Choice -eq 2) {
+    <# Action when this condition is true #>
+} {
+    taskkill /f /im "powershell.exe"
 }
