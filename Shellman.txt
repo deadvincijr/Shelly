@@ -1,18 +1,15 @@
-function RunUpdates {
-    $Roomsversion = 1
-    $Roomsdownloadversion = Get-Content -Path "C:\ShellyPrograms\Rooms Program\Version.txt"
-    write-host "Cloud Rooms Version is $Roomsversion"
-    write-host "Local Rooms Version is $Roomsdownloadversion"
 
-    if ($Roomsversion -ne -$Roomsdownloadversion) {
-        write-host "Version of Rooms is outdated or corrupted. Downloading new data from the cloud."
-        Remove-Item -Path "C:\ShellyPrograms\Rooms Program" -recurse
-        Invoke-WebRequest -Uri "https://github.com/deadvincijr/Shelly/raw/refs/heads/main/DownloadAssets/Rooms%20Program.zip" -OutFile "C:\ShellyPrograms\Rooms Program.zip"
-        Expand-Archive -Path "C:\ShellyPrograms\Rooms Program.zip" -DestinationPath "C:\ShellyPrograms"
-    }
+$Roomsversion = 1
+$Roomsdownloadversion = Get-Content -Path "C:\ShellyPrograms\Rooms Program\Version.txt"
+write-host "Cloud Rooms Version is $Roomsversion"
+write-host "Local Rooms Version is $Roomsdownloadversion"
+
+if ($Roomsversion -ne -$Roomsdownloadversion) {
+    write-host "Version of Rooms is outdated or corrupted. Downloading new data from the cloud."
+    Remove-Item -Path "C:\ShellyPrograms\Rooms Program" -recurse
+    Invoke-WebRequest -Uri "https://github.com/deadvincijr/Shelly/raw/refs/heads/main/DownloadAssets/Rooms%20Program.zip" -OutFile "C:\ShellyPrograms\Rooms Program.zip"
+    Expand-Archive -Path "C:\ShellyPrograms\Rooms Program.zip" -DestinationPath "C:\ShellyPrograms"
 }
-
-RunUpdates
 
 Clear-Host
 Write-Host "Dean's Shell from H*** has loaded correctly. Please select an option."
