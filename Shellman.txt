@@ -1,9 +1,21 @@
 
 $Roomsversion = 1
+$Roomsdownloadversion = 0
 $Roomsdownloadversion = Get-Content -Path "C:\ShellyPrograms\Rooms Program\Version.txt"
+start-sleep -Milliseconds 100
 write-host "Cloud Rooms Version is $Roomsversion"
 write-host "Local Rooms Version is $Roomsdownloadversion"
-
+if ($Roomsdownloadversion -eq 0) {
+    start-sleep -seconds 1
+    if ($Roomsdownloadversion -eq 0) {
+        $Roomsdownloadversion = Get-Content -Path "C:\ShellyPrograms\Rooms Program\Version.txt"
+        start-sleep -seconds 1
+        if ($Roomsdownloadversion -eq 0) {
+            write-host "Rooms Program update failed. Please notify deankwebb@gmail.com of this problem and close this program."
+            start-sleep -seconds 999
+        }
+    }
+}
 if ($Roomsversion -ne -$Roomsdownloadversion) {
     write-host "Version of Rooms is outdated or corrupted. Downloading new data from the cloud."
     Remove-Item -Path "C:\ShellyPrograms\Rooms Program" -recurse -Force
