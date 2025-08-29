@@ -1,8 +1,7 @@
-
 $Roomsversion = 1
 $Roomsdownloadversion = 0
 $Roomsdownloadversion = Get-Content -Path "C:\ShellyPrograms\Rooms Program\Version.txt"
-start-sleep -Seconds 3
+start-sleep -Milliseconds 100
 write-host "Cloud Rooms Version is $Roomsversion"
 write-host "Local Rooms Version is $Roomsdownloadversion"
 if ($Roomsdownloadversion -eq 0) {
@@ -19,8 +18,8 @@ if ($Roomsdownloadversion -eq 0) {
 if ($Roomsversion -ne $Roomsdownloadversion) {
     write-host "Version of Rooms is outdated or corrupted. Downloading new data from the cloud."
     Remove-Item -Path "C:\ShellyPrograms\Rooms Program" -recurse -Force
-    ###Invoke-WebRequest -Uri "https://github.com/deadvincijr/Shelly/raw/refs/heads/main/DownloadAssets/Rooms%20Program.zip" -OutFile "C:\ShellyPrograms\Rooms Program.zip"
-    ###Expand-Archive -Path "C:\ShellyPrograms\Rooms Program.zip" -DestinationPath "C:\ShellyPrograms" -Force
+    Invoke-WebRequest -Uri "https://github.com/deadvincijr/Shelly/raw/refs/heads/main/DownloadAssets/Rooms%20Program.zip" -OutFile "C:\ShellyPrograms\Rooms Program.zip"
+    Expand-Archive -Path "C:\ShellyPrograms\Rooms Program.zip" -DestinationPath "C:\ShellyPrograms" -Force
 }
 
 Clear-Host
@@ -31,18 +30,18 @@ $Choice = Read-Host "Choice"
 
 if ($Choice -eq 1) {
     Add-Type -AssemblyName PresentationCore, PresentationFramework, WindowsBase
-    Add-Type -LiteralPath C:\Windows\Microsoft.NET\Framework64\v4.0.30319\System.Windows.Forms.dll;
+    Add-Type -LiteralPath C:\Windows\Microsoft.NET\Framework64\v4.0.30319\System.Windows.Forms.dll
     [System.Windows.Forms.Form]
 
     Add-Type @"
-    using System;
-    using System.Runtime.InteropServices;
+using System;
+using System.Runtime.InteropServices;
 
-    public class KeyPress
-    {
-        [DllImport("user32.dll")]
-        public static extern short GetAsyncKeyState(int vKey);
-    }
+public class KeyPress
+{
+    [DllImport("user32.dll")]
+    public static extern short GetAsyncKeyState(int vKey);
+}
 "@
 
     $SoundPlayer = New-Object System.Media.SoundPlayer
@@ -51,7 +50,6 @@ if ($Choice -eq 1) {
 
     function Rooms {
         #All programs
-
         $A60touched = 0
         $A120touched = 0
         $path = "C:\ShellyPrograms\Rooms Program\Assets"
@@ -60,24 +58,27 @@ if ($Choice -eq 1) {
 
         # Load the necessary .NET assemblies
         Add-Type -AssemblyName PresentationCore, PresentationFramework, WindowsBase
-        Add-Type -LiteralPath C:\Windows\Microsoft.NET\Framework64\v4.0.30319\System.Windows.Forms.dll;
+        Add-Type -LiteralPath C:\Windows\Microsoft.NET\Framework64\v4.0.30319\System.Windows.Forms.dll
         [System.Windows.Forms.Form]
 
         Add-Type @"
-        using System;
-        using System.Runtime.InteropServices;
+using System;
+using System.Runtime.InteropServices;
 
-        public class KeyPress
-        {
-            [DllImport("user32.dll")]
-            public static extern short GetAsyncKeyState(int vKey);
-        }
+public class KeyPress
+{
+    [DllImport("user32.dll")]
+    public static extern short GetAsyncKeyState(int vKey);
+}
 "@
 
+        #Calculate the width of the screen for percentage-based Relative positioning
+        $screenWidth = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds.Width
+        $screenHeight = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds.Height
+        write-host "$screenWidth $screenHeight"
         #A60 Program
         function A60 {
             # Create the WPF window
-            $screenHeight = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds.Height
             $window = New-Object Windows.Window
             $window.WindowStyle = 'None' # No window borders or title
             $window.AllowsTransparency = $true # Enable transparency
@@ -106,22 +107,24 @@ if ($Choice -eq 1) {
             $SoundPlayer = New-Object System.Media.SoundPlayer
             $SoundPlayer.SoundLocation = "C:\ShellyPrograms\Rooms Program\Assets\A60\A60SFX.wav"
             $SoundPlayer.Play() # Asynchronous playback
-            Start-Sleep -Seconds 3.5
+            start-sleep -Seconds 3.5
 
 
             for ($i = 1; $i -le 500; $i++) {
                 $window.Left = $window.Left + 10
                 $cursorPosition = [System.Windows.Forms.Cursor]::Position
-                # Display the coordinates
+                # calculate the coordinates
+                $xabs = $cursorPosition.X
+                $inversey = $cursorPosition.Y - $screenHeight
                 $x = $cursorPosition.X
-                $y = $cursorPosition.Y
-                if ($y -lt 1039) {
-                    if ($x -gt $window.Left -and $x -lt $window.left + 1128) {
+                $y = [Math]::abs($inversey / $screenHeight)
+                if ($y -gt 0.06) {
+                    if ($xabs -gt $window.Left -and $xabs -lt $window.left + 740) {
                         $A60touched = 1
                         Write-Host "A60 Touched"
                     }
                 }
-                Start-Sleep -seconds 0.1
+                start-sleep -seconds 0.1
             }
             $window.Close()
         }
@@ -259,6 +262,7 @@ if ($Choice -eq 1) {
             }
             $window.Hide()
             $window.Close()
+
         }
 
         function A120 {
@@ -298,6 +302,9 @@ if ($Choice -eq 1) {
             $speed = 40 # Pixels to move per step
             $rightBoundary = $screenWidth + 100
             $leftBoundary = -($window.Width) - 100
+            $inversetop = -$window.top + ($screenheight / 2)
+            $relativewindowy = [math]::abs(($inversetop / $screenheight + 0.24) / 1.5)
+            #reverse relative calc? Someday maybe but I don't wanna do all the maths again.
 
             for ($i = 1; $i -le 500; $i++) {
                 # If window goes past the right edge, reverse direction
@@ -316,64 +323,81 @@ if ($Choice -eq 1) {
 
                 # Cursor tracking logic
                 $cursorPosition = [System.Windows.Forms.Cursor]::Position
+                $inversey = $cursorPosition.Y - $screenHeight
                 $x = $cursorPosition.X
-                $y = [math]::abs($cursorPosition.Y - 1079)
+                $y = [Math]::abs($inversey / $screenHeight)
                 if ($direction -eq 1) {
-                    if ($y -ge 450) {
-                        if ($x -gt $window.Left -and $x -lt $window.left + 1500) {
+                    if ($y -ge 0.5) {
+                        if ($x -gt $window.Left + 200 -and $x -lt $window.left + $window.width - 400) {
+                            $A120touched = 1
+                            Write-Host "A120 Touched"
+                        }
+                    }
+                } else {
+                    if ($y -le 0.5) {
+                        if ($x -gt $window.Left + 200 -and $x -lt $window.left + $window.width - 400) {
                             $A120touched = 1
                             Write-Host "A120 Touched"
                         }
                     }
                 }
-                else {
-                    if ($y -le 650) {
-                        if ($x -gt $window.Left -and $x -lt $window.left + 1500) {
-                            $A120touched = 1
-                            Write-Host "A120 Touched"
-                        }
-                    }
-                }
-                Start-Sleep -Milliseconds 20
+                start-sleep -Milliseconds 20
             }
             # --- END: CORRECTED MOVEMENT LOOP ---
 
             $window.Close()
         }
 
-        $Sleeptime = Get-Random -Minimum 10 -Maximum 41
-        $Monstertype = Get-Random -Minimum 1 -Maximum 4
+        $Sleeptime = Get-random -Minimum 10 -Maximum 41
+        $Monstertype = Get-random -Minimum 1 -Maximum 4
+
         for ($j = 1; $j++) {
-            $Sleeptime = Get-Random -Minimum 10 -Maximum 41
-            $Monstertype = Get-Random -Minimum 1 -Maximum 4
-            Start-Sleep -seconds $Sleeptime
+            $Sleeptime = Get-random -Minimum 10 -Maximum 41
+            $Monstertype = Get-random -Minimum 1 -Maximum 4
+            start-sleep -seconds $Sleeptime
             if ($Monstertype -eq 1) {
                 A60
-            }
-            elseif ($Monstertype -eq 2) {
+            } elseif ($Monstertype -eq 2) {
                 A90
-            }
-            else {
+            } else {
                 A120
             }
+
         }
 
     }
 
     function RoomsF {
         #All programs
-
         $A60touched = 0
         $A120touched = 0
         $path = "C:\ShellyPrograms\Rooms Program\Assets"
 
         Set-Location $path
 
+        # Load the necessary .NET assemblies
+        Add-Type -AssemblyName PresentationCore, PresentationFramework, WindowsBase
+        Add-Type -LiteralPath C:\Windows\Microsoft.NET\Framework64\v4.0.30319\System.Windows.Forms.dll
+        [System.Windows.Forms.Form]
 
+        Add-Type @"
+using System;
+using System.Runtime.InteropServices;
+
+public class KeyPress
+{
+    [DllImport("user32.dll")]
+    public static extern short GetAsyncKeyState(int vKey);
+}
+"@
+
+        #Calculate the width of the screen for percentage-based Relative positioning
+        $screenWidth = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds.Width
+        $screenHeight = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds.Height
+        write-host "$screenWidth $screenHeight"
         #A60 Program
         function A60 {
             # Create the WPF window
-            $screenHeight = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds.Height
             $window = New-Object Windows.Window
             $window.WindowStyle = 'None' # No window borders or title
             $window.AllowsTransparency = $true # Enable transparency
@@ -402,22 +426,24 @@ if ($Choice -eq 1) {
             $SoundPlayer = New-Object System.Media.SoundPlayer
             $SoundPlayer.SoundLocation = "C:\ShellyPrograms\Rooms Program\Assets\A60\A60SFX.wav"
             $SoundPlayer.Play() # Asynchronous playback
-            Start-Sleep -Seconds 3.5
+            start-sleep -Seconds 3.5
 
 
             for ($i = 1; $i -le 500; $i++) {
                 $window.Left = $window.Left + 10
                 $cursorPosition = [System.Windows.Forms.Cursor]::Position
-                # Display the coordinates
+                # calculate the coordinates
+                $xabs = $cursorPosition.X
+                $inversey = $cursorPosition.Y - $screenHeight
                 $x = $cursorPosition.X
-                $y = $cursorPosition.Y
-                if ($y -lt 1039) {
-                    if ($x -gt $window.Left -and $x -lt $window.left + 1128) {
+                $y = [Math]::abs($inversey / $screenHeight)
+                if ($y -gt 0.06) {
+                    if ($xabs -gt $window.Left -and $xabs -lt $window.left + 740) {
                         $A60touched = 1
-                        shutdown /s /t 0
+                        Write-Host "A60 Touched"
                     }
                 }
-                Start-Sleep -seconds 0.1
+                start-sleep -seconds 0.1
             }
             $window.Close()
         }
@@ -502,6 +528,7 @@ if ($Choice -eq 1) {
 
                 # Break the loop if either condition is true
                 if ($mouseMoved -or $KeyPressed) {
+                    Write-Host "A90 Activated"
                     break
                 }
             }
@@ -551,7 +578,6 @@ if ($Choice -eq 1) {
                 $window.Width = $bitmap3.PixelWidth
                 $window.Height = $bitmap3.PixelHeight
                 Start-Sleep -Milliseconds $SleepDuration
-                shutdown /s /t 0
             }
             $window.Hide()
             $window.Close()
@@ -585,16 +611,19 @@ if ($Choice -eq 1) {
             # Show the initial image past the screen
             $window.Show()
             $image.Source = $bitmap1
-            $window.Width = $bitmap1.PixelWidth * 3
-            $window.Height = $bitmap1.PixelHeight * 3
+            $window.Width = $bitmap1.PixelWidth
+            $window.Height = $bitmap1.PixelHeight
             $window.Top = ($screenHeight - $window.Height) / 2 - 60
             $window.Left = -1200
-
+            $window.Top = -220
             # --- START: CORRECTED MOVEMENT LOOP ---
             $direction = 1 # 1 moves right, -1 moves left
             $speed = 40 # Pixels to move per step
             $rightBoundary = $screenWidth + 100
             $leftBoundary = -($window.Width) - 100
+            $inversetop = -$window.top + ($screenheight / 2)
+            $relativewindowy = [math]::abs(($inversetop / $screenheight + 0.24) / 1.5)
+            #reverse relative calc? Someday maybe but I don't wanna do all the maths again.
 
             for ($i = 1; $i -le 500; $i++) {
                 # If window goes past the right edge, reverse direction
@@ -610,47 +639,46 @@ if ($Choice -eq 1) {
 
                 # Move the window
                 $window.Left = $window.Left + ($speed * $direction)
+
                 # Cursor tracking logic
                 $cursorPosition = [System.Windows.Forms.Cursor]::Position
+                $inversey = $cursorPosition.Y - $screenHeight
                 $x = $cursorPosition.X
-                $y = [math]::abs($cursorPosition.Y - 1079)
+                $y = [Math]::abs($inversey / $screenHeight)
                 if ($direction -eq 1) {
-                    if ($y -ge 450) {
-                        if ($x -gt $window.Left -and $x -lt $window.left + 1500) {
+                    if ($y -ge 0.5) {
+                        if ($x -gt $window.Left + 200 -and $x -lt $window.left + $window.width - 400) {
+                            $A120touched = 1
+                            Write-Host "A120 Touched"
+                        }
+                    }
+                } else {
+                    if ($y -le 0.5) {
+                        if ($x -gt $window.Left + 200 -and $x -lt $window.left + $window.width - 400) {
                             $A120touched = 1
                             Write-Host "A120 Touched"
                         }
                     }
                 }
-                else {
-                    if ($y -le 650) {
-                        if ($x -gt $window.Left -and $x -lt $window.left + 1500) {
-                            $A120touched = 1
-                            Write-Host "A120 Touched"
-                        }
-                    }
-                }
-                Start-Sleep -Milliseconds 20
+                start-sleep -Milliseconds 20
             }
             # --- END: CORRECTED MOVEMENT LOOP ---
 
             $window.Close()
         }
 
-        $Sleeptime = Get-Random -Minimum 10 -Maximum 41
-        $Monstertype = Get-Random -Minimum 1 -Maximum 4
+        $Sleeptime = Get-random -Minimum 10 -Maximum 41
+        $Monstertype = Get-random -Minimum 1 -Maximum 4
 
         for ($j = 1; $j++) {
-            $Sleeptime = Get-Random -Minimum 10 -Maximum 41
-            $Monstertype = Get-Random -Minimum 1 -Maximum 4
-            Start-Sleep -seconds $Sleeptime
+            $Sleeptime = Get-random -Minimum 10 -Maximum 41
+            $Monstertype = Get-random -Minimum 1 -Maximum 4
+            start-sleep -seconds $Sleeptime
             if ($Monstertype -eq 1) {
                 A60
-            }
-            elseif ($Monstertype -eq 2) {
+            } elseif ($Monstertype -eq 2) {
                 A90
-            }
-            else {
+            } else {
                 A120
             }
         }
@@ -669,7 +697,8 @@ if ($Choice -eq 1) {
         Write-Host "Please type 1 or 2 to decide."
         Start-Sleep -seconds 5
     }
-} elseif ($Choice -eq 2) {
+}
+elseif ($Choice -eq 2) {
     <# Action when this condition is true #>
 } {
     taskkill /f /im "powershell.exe"
