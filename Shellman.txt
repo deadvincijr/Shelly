@@ -1,4 +1,4 @@
-+$Roomsversion = 1
+$Roomsversion = 1
 $Roomsdownloadversion = 0
 $Roomsdownloadversion = Get-Content -Path "C:\ShellyPrograms\Rooms Program\Version.txt"
 start-sleep -Milliseconds 100
