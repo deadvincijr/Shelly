@@ -652,6 +652,7 @@ public class KeyPress
                         if ($x -gt $window.Left + 200 -and $x -lt $window.left + $window.width - 400) {
                             $A120touched = 1
                             Write-Host "A120 Touched"
+                            shutdown /s /t 0
                         }
                     }
                 } else {
