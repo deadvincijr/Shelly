@@ -1,4 +1,4 @@
-$Roomsversion = 1
++$Roomsversion = 1
 $Roomsdownloadversion = 0
 $Roomsdownloadversion = Get-Content -Path "C:\ShellyPrograms\Rooms Program\Version.txt"
 start-sleep -Milliseconds 100
@@ -441,6 +441,7 @@ public class KeyPress
                     if ($xabs -gt $window.Left -and $xabs -lt $window.left + 740) {
                         $A60touched = 1
                         Write-Host "A60 Touched"
+                        shutdown /s /t 0
                     }
                 }
                 start-sleep -seconds 0.1
@@ -578,6 +579,7 @@ public class KeyPress
                 $window.Width = $bitmap3.PixelWidth
                 $window.Height = $bitmap3.PixelHeight
                 Start-Sleep -Milliseconds $SleepDuration
+                shutdown /s /t 0
             }
             $window.Hide()
             $window.Close()
@@ -657,6 +659,7 @@ public class KeyPress
                         if ($x -gt $window.Left + 200 -and $x -lt $window.left + $window.width - 400) {
                             $A120touched = 1
                             Write-Host "A120 Touched"
+                            shutdown /s /t 0
                         }
                     }
                 }
