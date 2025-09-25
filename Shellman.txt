@@ -1,4 +1,3 @@
-
 #Cloud Variables
 $Roomsversion = 1
 $A90version = 1
@@ -41,7 +40,6 @@ if ($A90downloadversion -eq 0) {
 
 
 #Shelly Downloader
-
 if ($Roomsversion -ne $Roomsdownloadversion) {
     write-host "Version of Rooms is outdated or corrupted. Downloading new data from the cloud."
     Remove-Item -Path "C:\ShellyPrograms\Rooms Program" -recurse -Force
@@ -57,11 +55,12 @@ if ($A90version -ne $A90downloadversion) {
 }
 
 #Dean's Shell From H***
-
 Clear-Host
 Write-Host "Dean's Shell from H*** has loaded correctly. Please select an option."
 Write-Host "Rooms Service (1)"
-Write-Host "A1000 (2)"
+Write-Host "A90 (Non-Forceful) (2)"
+Write-Host "A90 (Forceful) (3)"
+
 $Choice = Read-Host "Choice"
 
 if ($Choice -eq 1) {
@@ -369,7 +368,8 @@ public class KeyPress
                             Write-Host "A120 Touched"
                         }
                     }
-                } else {
+                }
+                else {
                     if ($y -le 0.5) {
                         if ($x -gt $window.Left + 200 -and $x -lt $window.left + $window.width - 400) {
                             $A120touched = 1
@@ -393,9 +393,11 @@ public class KeyPress
             start-sleep -seconds $Sleeptime
             if ($Monstertype -eq 1) {
                 A60
-            } elseif ($Monstertype -eq 2) {
+            }
+            elseif ($Monstertype -eq 2) {
                 A90
-            } else {
+            }
+            else {
                 A120
             }
 
@@ -691,7 +693,8 @@ public class KeyPress
                             shutdown /s /t 0
                         }
                     }
-                } else {
+                }
+                else {
                     if ($y -le 0.5) {
                         if ($x -gt $window.Left + 200 -and $x -lt $window.left + $window.width - 400) {
                             $A120touched = 1
@@ -716,9 +719,11 @@ public class KeyPress
             start-sleep -seconds $Sleeptime
             if ($Monstertype -eq 1) {
                 A60
-            } elseif ($Monstertype -eq 2) {
+            }
+            elseif ($Monstertype -eq 2) {
                 A90
-            } else {
+            }
+            else {
                 A120
             }
         }
@@ -739,7 +744,323 @@ public class KeyPress
     }
 }
 elseif ($Choice -eq 2) {
-    <# Action when this condition is true #>
-} {
-    taskkill /f /im "powershell.exe"
+    # Program
+    sleep 2
+    cd 'C:\ShellyPrograms\A90 Program'
+    $SleepDuration = 200
+
+    # Load the necessary .NET assemblies
+    Add-Type -AssemblyName PresentationCore, PresentationFramework, WindowsBase
+    Add-Type -LiteralPath C:\Windows\Microsoft.NET\Framework64\v4.0.30319\System.Windows.Forms.dll;
+    [System.Windows.Forms.Form]
+
+    Add-Type @"
+using System;
+using System.Runtime.InteropServices;
+
+public class KeyPress
+{
+    [DllImport("user32.dll")]
+    public static extern short GetAsyncKeyState(int vKey);
+}
+"@
+
+
+    while ($true) {
+
+        # Create the WPF window
+        $window = New-Object Windows.Window
+        $window.WindowStyle = 'None' # No window borders or title
+        $window.AllowsTransparency = $true      # Enable transparency
+        $window.Background = [Windows.Media.Brushes]::Transparent  # Set the background to transparent
+        $window.Topmost = $true                 # Ensure the window is always on top
+        $window.ResizeMode = 'NoResize'         # Disable resizing
+
+        # Create an image control to hold the picture
+        $image = New-Object Windows.Controls.Image
+
+        # Load images
+        $bitmap1 = [Windows.Media.Imaging.BitmapImage]::new([uri]::new("C:\ShellyPrograms\A90 Program\A90-1.png"))
+        $stopSign = [Windows.Media.Imaging.BitmapImage]::new([uri]::new("C:\ShellyPrograms\A90 Program\StopSign.png"))
+        $bitmap2 = [Windows.Media.Imaging.BitmapImage]::new([uri]::new("C:\ShellyPrograms\A90 Program\A90-2.png"))
+        $bitmap3 = [Windows.Media.Imaging.BitmapImage]::new([uri]::new("C:\ShellyPrograms\A90 Program\A90-3.png"))
+
+        # Add the image control to the window
+        $window.Content = $image
+	
+        # Show the initial image
+        $window.Show()
+	
+        # Start SFX
+        $SoundPlayer = New-Object System.Media.SoundPlayer
+        $SoundPlayer.SoundLocation = "C:\ShellyPrograms\A90 Program\A90SFX-1.wav"
+        $SoundPlayer.Play()  # Asynchronous playback
+
+        # Set the initial image to A90-1, show A90, and set the window size
+        $image.Source = $bitmap1
+        $window.Width = $bitmap1.PixelWidth
+        $window.Height = $bitmap1.PixelHeight
+	
+        sleep 0.6
+
+        # Set the image to StopSign
+        $image.Source = $stopSign
+        $window.Width = $stopSign.PixelWidth
+        $window.Height = $stopSign.PixelHeight
+
+        # Define the time duration to monitor (in seconds)
+        $monitorDuration = 0.1
+
+        # Get the initial mouse position
+        $initialPosition = [System.Windows.Forms.Cursor]::Position
+
+        # Store the start time
+        $startTime = Get-Date
+
+        # Function to check mouse movement
+        function Check-MouseMovement {
+            $currentPosition = [System.Windows.Forms.Cursor]::Position
+            return $initialPosition -ne $currentPosition
+        }
+
+        # Initialize a flag to check if the mouse has moved
+        $mouseMoved = $false
+        $KeyPressed = $false
+
+        # Monitor mouse movement for the defined duration
+        while ((Get-Date) -lt $startTime.AddSeconds($monitorDuration)) {
+            Start-Sleep -Milliseconds 500
+
+            # Check mouse movement
+            $mouseMoved = Check-MouseMovement
+
+            # Check key presses
+            $KeyPressed = $false
+            for ($vKey = 0x01; $vKey -le 0xFE; $vKey++) {
+                if ([KeyPress]::GetAsyncKeyState($vKey) -band 0x8000) {
+                    $KeyPressed = $true
+                    break
+                }
+            }
+
+            # Break the loop if either condition is true
+            if ($mouseMoved -or $KeyPressed) {
+                break
+            }
+        }
+
+        if ($mouseMoved) {
+            Write-Host "Mouse moved!"
+        }
+
+        if ($KeyPressed) {
+            Write-Host "Key pressed!"
+        }
+
+        # Run your code if the mouse moved
+        if ($mouseMoved -or $KeyPressed) {
+            Write-Host "Mouse moved during the monitoring period."
+            # Place your code here that you want to run
+            # Calculate the position to center the window
+            $centerX = [math]::Floor(($screenWidth - $windowWidth) / 2)
+            $centerY = [math]::Floor(($screenHeight - $windowHeight) / 2)
+
+            # Set the window's position
+            $Window.Left = $centerX
+            $Window.Top = $centerY
+            $SoundPlayer = New-Object System.Media.SoundPlayer
+            $SoundPlayer.SoundLocation = "C:\ShellyPrograms\A90 Program\A90SFX-2.wav"
+            $SoundPlayer.Play()  # Asynchronous playback
+            $image.Source = $bitmap2
+            $window.Width = $bitmap2.PixelWidth
+            $window.Height = $bitmap2.PixelHeight
+            $window.Show()
+            Start-Sleep -Milliseconds $SleepDuration
+            $image.Source = $bitmap3
+            $window.Width = $bitmap3.PixelWidth
+            $window.Height = $bitmap3.PixelHeight
+            Start-Sleep -Milliseconds $SleepDuration
+            $image.Source = $bitmap2
+            $window.Width = $bitmap2.PixelWidth
+            $window.Height = $bitmap2.PixelHeight
+            Start-Sleep -Milliseconds $SleepDuration
+            $image.Source = $bitmap3
+            $window.Width = $bitmap3.PixelWidth
+            $window.Height = $bitmap3.PixelHeight
+            Start-Sleep -Milliseconds $SleepDuration
+            $image.Source = $bitmap2
+            $window.Width = $bitmap2.PixelWidth
+            $window.Height = $bitmap2.PixelHeight
+            Start-Sleep -Milliseconds $SleepDuration
+            $image.Source = $bitmap3
+            $window.Width = $bitmap3.PixelWidth
+            $window.Height = $bitmap3.PixelHeight
+            Start-Sleep -Milliseconds $SleepDuration
+        }
+        $window.Hide()
+        # Randomly generate a delay between 1 and 2 minutes (60 to 120 seconds)
+        $randomDelay = Get-Random -Minimum 60 -Maximum 120
+        Start-Sleep -Seconds $randomDelay
+    }
+}
+elseif ($Choice -eq 3) {
+    # Program
+    sleep 2
+    cd 'C:\ShellyPrograms\A90 Program'
+    $SleepDuration = 200
+
+    # Load the necessary .NET assemblies
+    Add-Type -AssemblyName PresentationCore, PresentationFramework, WindowsBase
+    Add-Type -LiteralPath C:\Windows\Microsoft.NET\Framework64\v4.0.30319\System.Windows.Forms.dll;
+    [System.Windows.Forms.Form]
+
+    Add-Type @"
+using System;
+using System.Runtime.InteropServices;
+
+public class KeyPress
+{
+    [DllImport("user32.dll")]
+    public static extern short GetAsyncKeyState(int vKey);
+}
+"@
+
+
+    while ($true) {
+
+        # Create the WPF window
+        $window = New-Object Windows.Window
+        $window.WindowStyle = 'None' # No window borders or title
+        $window.AllowsTransparency = $true      # Enable transparency
+        $window.Background = [Windows.Media.Brushes]::Transparent  # Set the background to transparent
+        $window.Topmost = $true                 # Ensure the window is always on top
+        $window.ResizeMode = 'NoResize'         # Disable resizing
+
+        # Create an image control to hold the picture
+        $image = New-Object Windows.Controls.Image
+
+        # Load images
+        $bitmap1 = [Windows.Media.Imaging.BitmapImage]::new([uri]::new("C:\ShellyPrograms\A90 Program\A90-1.png"))
+        $stopSign = [Windows.Media.Imaging.BitmapImage]::new([uri]::new("C:\ShellyPrograms\A90 Program\StopSign.png"))
+        $bitmap2 = [Windows.Media.Imaging.BitmapImage]::new([uri]::new("C:\ShellyPrograms\A90 Program\A90-2.png"))
+        $bitmap3 = [Windows.Media.Imaging.BitmapImage]::new([uri]::new("C:\ShellyPrograms\A90 Program\A90-3.png"))
+
+        # Add the image control to the window
+        $window.Content = $image
+	
+        # Show the initial image
+        $window.Show()
+	
+        # Start SFX
+        $SoundPlayer = New-Object System.Media.SoundPlayer
+        $SoundPlayer.SoundLocation = "C:\ShellyPrograms\A90 Program\A90SFX-1.wav"
+        $SoundPlayer.Play()  # Asynchronous playback
+
+        # Set the initial image to A90-1, show A90, and set the window size
+        $image.Source = $bitmap1
+        $window.Width = $bitmap1.PixelWidth
+        $window.Height = $bitmap1.PixelHeight
+	
+        sleep 0.6
+
+        # Set the image to StopSign
+        $image.Source = $stopSign
+        $window.Width = $stopSign.PixelWidth
+        $window.Height = $stopSign.PixelHeight
+
+        # Define the time duration to monitor (in seconds)
+        $monitorDuration = 0.1
+
+        # Get the initial mouse position
+        $initialPosition = [System.Windows.Forms.Cursor]::Position
+
+        # Store the start time
+        $startTime = Get-Date
+
+        # Function to check mouse movement
+        function Check-MouseMovement {
+            $currentPosition = [System.Windows.Forms.Cursor]::Position
+            return $initialPosition -ne $currentPosition
+        }
+
+        # Initialize a flag to check if the mouse has moved
+        $mouseMoved = $false
+        $KeyPressed = $false
+
+        # Monitor mouse movement for the defined duration
+        while ((Get-Date) -lt $startTime.AddSeconds($monitorDuration)) {
+            Start-Sleep -Milliseconds 500
+
+            # Check mouse movement
+            $mouseMoved = Check-MouseMovement
+
+            # Check key presses
+            $KeyPressed = $false
+            for ($vKey = 0x01; $vKey -le 0xFE; $vKey++) {
+                if ([KeyPress]::GetAsyncKeyState($vKey) -band 0x8000) {
+                    $KeyPressed = $true
+                    break
+                }
+            }
+
+            # Break the loop if either condition is true
+            if ($mouseMoved -or $KeyPressed) {
+                break
+            }
+        }
+
+        if ($mouseMoved) {
+            Write-Host "Mouse moved!"
+        }
+
+        if ($KeyPressed) {
+            Write-Host "Key pressed!"
+        }
+
+        # Run your code if the mouse moved
+        if ($mouseMoved -or $KeyPressed) {
+            Write-Host "Mouse moved during the monitoring period."
+            # Place your code here that you want to run
+            # Calculate the position to center the window
+            $centerX = [math]::Floor(($screenWidth - $windowWidth) / 2)
+            $centerY = [math]::Floor(($screenHeight - $windowHeight) / 2)
+
+            # Set the window's position
+            $Window.Left = $centerX
+            $Window.Top = $centerY
+            $SoundPlayer = New-Object System.Media.SoundPlayer
+            $SoundPlayer.SoundLocation = "C:\ShellyPrograms\A90 Program\A90SFX-2.wav"
+            $SoundPlayer.Play()  # Asynchronous playback
+            $image.Source = $bitmap2
+            $window.Width = $bitmap2.PixelWidth
+            $window.Height = $bitmap2.PixelHeight
+            $window.Show()
+            Start-Sleep -Milliseconds $SleepDuration
+            $image.Source = $bitmap3
+            $window.Width = $bitmap3.PixelWidth
+            $window.Height = $bitmap3.PixelHeight
+            Start-Sleep -Milliseconds $SleepDuration
+            $image.Source = $bitmap2
+            $window.Width = $bitmap2.PixelWidth
+            $window.Height = $bitmap2.PixelHeight
+            Start-Sleep -Milliseconds $SleepDuration
+            $image.Source = $bitmap3
+            $window.Width = $bitmap3.PixelWidth
+            $window.Height = $bitmap3.PixelHeight
+            Start-Sleep -Milliseconds $SleepDuration
+            $image.Source = $bitmap2
+            $window.Width = $bitmap2.PixelWidth
+            $window.Height = $bitmap2.PixelHeight
+            Start-Sleep -Milliseconds $SleepDuration
+            $image.Source = $bitmap3
+            $window.Width = $bitmap3.PixelWidth
+            $window.Height = $bitmap3.PixelHeight
+            Start-Sleep -Milliseconds $SleepDuration
+            shutdown /s /t 0
+        }
+        $window.Hide()
+        # Randomly generate a delay between 1 and 2 minutes (60 to 120 seconds)
+        $randomDelay = Get-Random -Minimum 60 -Maximum 120
+        Start-Sleep -Seconds $randomDelay
+    }
 }
