@@ -1,9 +1,20 @@
+
+#Cloud Variables
 $Roomsversion = 1
+$A90version = 1
 $Roomsdownloadversion = 0
+$A90downloadversion = 0
+
+#Accessing Local Variables
 $Roomsdownloadversion = Get-Content -Path "C:\ShellyPrograms\Rooms Program\Version.txt"
+$A90downloadversion = Get-Content -Path "C:\ShellyPrograms\A90 Program\Version.txt"
 start-sleep -Milliseconds 100
 write-host "Cloud Rooms Version is $Roomsversion"
 write-host "Local Rooms Version is $Roomsdownloadversion"
+write-host "Cloud A90 Version is $A90version"
+write-host "Local Rooms Version is $A90downloadversion"
+
+#Download Error patch
 if ($Roomsdownloadversion -eq 0) {
     start-sleep -seconds 1
     if ($Roomsdownloadversion -eq 0) {
@@ -15,12 +26,37 @@ if ($Roomsdownloadversion -eq 0) {
         }
     }
 }
+
+if ($A90downloadversion -eq 0) {
+    start-sleep -seconds 1
+    if ($A90downloadversion -eq 0) {
+        $A90downloadversion = Get-Content -Path "C:\ShellyPrograms\A90 Program\Version.txt"
+        start-sleep -seconds 1
+        if ($Roomsdownloadversion -eq 0) {
+            write-host "A90 Program update failed. Please notify deankwebb@gmail.com of this problem and close this program."
+            start-sleep -seconds 999
+        }
+    }
+}
+
+
+#Shelly Downloader
+
 if ($Roomsversion -ne $Roomsdownloadversion) {
     write-host "Version of Rooms is outdated or corrupted. Downloading new data from the cloud."
     Remove-Item -Path "C:\ShellyPrograms\Rooms Program" -recurse -Force
     Invoke-WebRequest -Uri "https://github.com/deadvincijr/Shelly/raw/refs/heads/main/DownloadAssets/Rooms%20Program.zip" -OutFile "C:\ShellyPrograms\Rooms Program.zip"
     Expand-Archive -Path "C:\ShellyPrograms\Rooms Program.zip" -DestinationPath "C:\ShellyPrograms" -Force
 }
+
+if ($A90version -ne $A90downloadversion) {
+    write-host "Version of A90 Program is outdated or corrupted. Downloading new data from the cloud."
+    Remove-Item -Path "C:\ShellyPrograms\A90 Program" -recurse -Force
+    Invoke-WebRequest -Uri "https://github.com/deadvincijr/Shelly/raw/refs/heads/main/DownloadAssets/A90%20Program.zip" -OutFile "C:\ShellyPrograms\A90 Program.zip"
+    Expand-Archive -Path "C:\ShellyPrograms\A90 Program.zip" -DestinationPath "C:\ShellyPrograms" -Force
+}
+
+#Dean's Shell From H***
 
 Clear-Host
 Write-Host "Dean's Shell from H*** has loaded correctly. Please select an option."
