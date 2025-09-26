@@ -1,18 +1,22 @@
 #Cloud Variables
 $Roomsversion = 1
 $A90version = 1
+$TowersVersion = 0.1
 $Roomsdownloadversion = 0
 $A90downloadversion = 0
+$Towersdownloadversion = 0
 
 #Accessing Local Variables
 $Roomsdownloadversion = Get-Content -Path "C:\ShellyPrograms\Rooms Program\Version.txt"
 $A90downloadversion = Get-Content -Path "C:\ShellyPrograms\A90 Program\Version.txt"
+$Towersdownloadversion = Get-Content -Path "C:\ShellyPrograms\JSgame v1\Version.txt"
 start-sleep -Milliseconds 100
 write-host "Cloud Rooms Version is $Roomsversion"
 write-host "Local Rooms Version is $Roomsdownloadversion"
 write-host "Cloud A90 Version is $A90version"
 write-host "Local Rooms Version is $A90downloadversion"
-
+write-host "Cloud A90 Version is $Towersversion"
+write-host "Local Rooms Version is $Towersdownloadversion"
 #Download Error patch
 if ($Roomsdownloadversion -eq 0) {
     start-sleep -seconds 1
@@ -38,6 +42,19 @@ if ($A90downloadversion -eq 0) {
     }
 }
 
+if ($Towersdownloadversion -eq 0) {
+    start-sleep -seconds 1
+    if ($Towersdownloadversion -eq 0) {
+        $Towersdownloadversion = Get-Content -Path "C:\ShellyPrograms\JSgame v1\Version.txt"
+        start-sleep -seconds 1
+        if ($Towersdownloadversion -eq 0) {
+            write-host "Towers Program update failed. Please notify deankwebb@gmail.com of this problem and close this program."
+            start-sleep -seconds 999
+        }
+    }
+}
+
+
 
 #Shelly Downloader
 if ($Roomsversion -ne $Roomsdownloadversion) {
@@ -54,9 +71,16 @@ if ($A90version -ne $A90downloadversion) {
     Expand-Archive -Path "C:\ShellyPrograms\A90 Program.zip" -DestinationPath "C:\ShellyPrograms" -Force
 }
 
+if ($Towersversion -ne $Towersdownloadversion) {
+    write-host "Version of Towers Program is outdated or corrupted. Downloading new data from the cloud."
+    Remove-Item -Path "C:\ShellyPrograms\JSgame v1" -recurse -Force
+    Invoke-WebRequest -Uri "https://github.com/deadvincijr/Shelly/raw/refs/heads/main/DownloadAssets/JSgame%20v1.zip" -OutFile "C:\ShellyPrograms\JSgame v1.zip"
+    Expand-Archive -Path "C:\ShellyPrograms\JSgame v1.zip" -DestinationPath "C:\ShellyPrograms" -Force
+}
+
 #Dean's Shell From H***
 Clear-Host
-Write-Host "Dean's Shell from H*** has loaded correctly. Please select an option."
+Write-Host "Dean's Shell from H*** has loaded correctly. Please select an option. (note, for towers html game please go through the file itself at C:/ShellyPrograms/JSgame v1/index.html. Make sure to run with chrome.)"
 Write-Host "Rooms Service (1)"
 Write-Host "A90 (Non-Forceful) (2)"
 Write-Host "A90 (Forceful) (3)"
